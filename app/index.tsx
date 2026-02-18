@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 
 
@@ -120,7 +120,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Insulin Injection Tracker</Text>
 
     {BODY_REGIONS.map((region) => {
@@ -142,15 +142,18 @@ export default function HomeScreen() {
               {formatExactTime(lastTimestamp)}
             </Text>
           )}
-          <Button
-            title="Injected here"
+          <Pressable
+            style={styles.injectButton}
             onPress={() => handleInjection(region)}
-          />
+          >
+            <Text style={styles.injectButtonText}>
+              Injected here
+            </Text>
+          </Pressable>
         </View>
       );
     })}
-
-    </View>
+    </ScrollView>
   );
 }
 
@@ -159,6 +162,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     paddingTop: 40,
+    backgroundColor: '#f2f4f8',
   },
   title: {
     fontSize: 22,
@@ -167,10 +171,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   regionRow: {
-    marginBottom: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
+    marginBottom: 14,
+    padding: 16,
+    //borderWidth: 1,
+    borderRadius: 12,
+    backgroundColor: '#f8f9fb',
   },
   regionText: {
     fontSize: 16,
@@ -189,5 +194,15 @@ const styles = StyleSheet.create({
   recentlyUsed: {
     backgroundColor: '#ffe5e5',
     borderColor: '#ff9999',
+  },
+  injectButton: {
+    backgroundColor: '#2f6fed',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  injectButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 });
