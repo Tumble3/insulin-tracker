@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 
 
@@ -67,6 +67,20 @@ export default function HomeScreen() {
     };
 
     setInjections((prev) => [newEntry, ...prev]);
+  };
+  
+  const confirmInjection = (region) => {
+    Alert.alert(
+      'Confirm Injection',
+      `Log injection in ${region}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: () => handleInjection(region),
+        },
+      ]
+    );
   };
 
   const getLastInjectionForRegion = (region) => {
@@ -144,7 +158,7 @@ export default function HomeScreen() {
           )}
           <Pressable
             style={styles.injectButton}
-            onPress={() => handleInjection(region)}
+            onPress={() => confirmInjection(region)}
           >
             <Text style={styles.injectButtonText}>
               Injected here

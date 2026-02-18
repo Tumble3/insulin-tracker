@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 
 
@@ -9,19 +9,50 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     const loadHistory = async () => {
-        const saved = await AsyncStorage.getItem('injections');
-        if (saved) {
-        const parsed = JSON.parse(saved);
-        parsed.sort((a, b) => b.timestamp - a.timestamp);
-        setHistory(parsed);
-        }
+      const saved = await AsyncStorage.getItem('injections');
+
+      if (!saved) {
+        setHistory([]);
+        return;
+      }
+
+      const parsed = JSON.parse(saved);
+
+      const sorted = parsed.sort(
+        (a, b) => b.timestamp - a.timestamp
+      );
+
+      setHistory(sorted);
     };
+
     loadHistory();
-    }, []);
+  }, []);
+
+  const confirmDelete = (id) => {
+    Alert.alert(
+      'Delete Entry',
+      'Are you sure you want to delete this injection?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteEntry(id),
+        },
+      ]
+    );
+  };
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
+  };
+  
+  const deleteEntry = async (id) => {
+    const updated = history.filter((item) => item.id !== id);
+
+    setHistory(updated);
+    await AsyncStorage.setItem('injections', JSON.stringify(updated));
   };
 
   return (
@@ -33,6 +64,12 @@ export default function HistoryScreen() {
           <View style={styles.item}>
             <Text style={styles.region}>{item.region}</Text>
             <Text style={styles.time}>{formatTime(item.timestamp)}</Text>
+            <Pressable
+              style={styles.deleteButton}
+              onPress={() => confirmDelete(item.id)}
+            >
+              <Text style={styles.deleteText}>Delete</Text>
+            </Pressable>
           </View>
         )}
         ListEmptyComponent={
@@ -64,5 +101,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
     color: '#777',
+  },
+  deleteButton: {
+  marginTop: 8,
+  paddingVertical: 6,
+  borderRadius: 6,
+  alignItems: 'center',
+  backgroundColor: '#ffecec',
+  },
+  deleteText: {
+    color: '#d11a2a',
+    fontWeight: '600',
   },
 });
