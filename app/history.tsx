@@ -1,32 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-
+import { InjectionContext } from '../context/InjectionContext';
 
 
 export default function HistoryScreen() {
-  const [history, setHistory] = useState([]);
-
-  useEffect(() => {
-    const loadHistory = async () => {
-      const saved = await AsyncStorage.getItem('injections');
-
-      if (!saved) {
-        setHistory([]);
-        return;
-      }
-
-      const parsed = JSON.parse(saved);
-
-      const sorted = parsed.sort(
-        (a, b) => b.timestamp - a.timestamp
-      );
-
-      setHistory(sorted);
-    };
-
-    loadHistory();
-  }, []);
+  //const [history, setHistory] = useState([]);
+  const { injections, deleteInjection } = useContext(InjectionContext);
 
   const confirmDelete = (id) => {
     Alert.alert(
@@ -37,28 +16,59 @@ export default function HistoryScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => deleteEntry(id),
+          onPress: () => deleteInjection(id)
         },
       ]
     );
   };
 
+  const sorted = [...injections].sort(
+    (a, b) => b.timestamp - a.timestamp
+  );
+  
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
   };
-  
-  const deleteEntry = async (id) => {
-    const updated = history.filter((item) => item.id !== id);
 
-    setHistory(updated);
-    await AsyncStorage.setItem('injections', JSON.stringify(updated));
-  };
+  const totalInjections = injections.length;
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+  const lastWeekCount = injections.filter(
+    (item) => item.timestamp >= oneWeekAgo
+  ).length;
+
+  const regionCounts = injections.reduce((acc, item) => {
+    acc[item.region] = (acc[item.region] || 0) + 1;
+    return acc;
+  }, {});
+
+  const mostUsedRegion =
+    Object.keys(regionCounts).length > 0
+      ? Object.entries(regionCounts).sort(
+          (a, b) => b[1] - a[1]
+        )[0][0]
+      : '—';
 
   return (
     <View style={styles.container}>
+      <View style={styles.statsContainer}>
+        <Text style={styles.statTitle}>Statistics</Text>
+
+        <Text style={styles.statItem}>
+          Total injections: {totalInjections}
+        </Text>
+
+        <Text style={styles.statItem}>
+          Last 7 days: {lastWeekCount}
+        </Text>
+
+        <Text style={styles.statItem}>
+          Most used region: {mostUsedRegion}
+        </Text>
+      </View>
       <FlatList
-        data={history}
+        data={sorted}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
@@ -112,5 +122,20 @@ const styles = StyleSheet.create({
   deleteText: {
     color: '#d11a2a',
     fontWeight: '600',
+  },
+  statsContainer: {
+    marginBottom: 20,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#f4f6fa',
+  },
+  statTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  statItem: {
+    fontSize: 14,
+    marginBottom: 4,
   },
 });

@@ -1,7 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { InjectionContext } from '../context/InjectionContext';
 
 
 
@@ -15,7 +14,7 @@ const BODY_REGIONS = [
 ];
 
 export default function HomeScreen() {
-  const [injections, setInjections] = useState([]);
+  const { injections, addInjection, loading } = useContext(InjectionContext);
   const [recoveryHours, setRecoveryHours] = useState(24);
 
   const isRecentlyUsed = (timestamp) => {
@@ -26,48 +25,6 @@ export default function HomeScreen() {
 
     return diffHours < recoveryHours;
   };
-
-  useEffect(() => {
-  const loadData = async () => {
-    try {
-      const saved = await AsyncStorage.getItem('injections');
-      if (saved !== null) {
-        setInjections(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.log('Failed to load injections', e);
-    }
-    const savedRecovery = await AsyncStorage.getItem('recoveryHours');
-    if (savedRecovery !== null) {
-      setRecoveryHours(Number(savedRecovery));
-    }
-  };
-  loadData();
-  }, []);
-
-  useEffect(() => {
-  const saveData = async () => {
-    try {
-      await AsyncStorage.setItem(
-        'injections',
-        JSON.stringify(injections)
-      );
-    } catch (e) {
-      console.log('Failed to save injections', e);
-    }
-  };
-  saveData();
-  }, [injections]);
-
-  const handleInjection = (region) => {
-    const newEntry = {
-      id: Date.now().toString(),
-      region,
-      timestamp: Date.now(),
-    };
-
-    setInjections((prev) => [newEntry, ...prev]);
-  };
   
   const confirmInjection = (region) => {
     Alert.alert(
@@ -77,7 +34,7 @@ export default function HomeScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Confirm',
-          onPress: () => handleInjection(region),
+          onPress: () => addInjection(region),
         },
       ]
     );
