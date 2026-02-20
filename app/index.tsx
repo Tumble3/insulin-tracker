@@ -76,6 +76,33 @@ export default function HomeScreen() {
     return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
   };
 
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 60000); // update every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getTimeUntilSafe = (timestamp: number | null) => {
+    if (!timestamp) return null;
+
+    const recoveryMs = recoveryHours * 60 * 60 * 1000;
+    const safeAt = timestamp + recoveryMs;
+    const diff = safeAt - Date.now();
+
+    if (diff <= 0) return null;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(
+      (diff % (1000 * 60 * 60)) / (1000 * 60)
+    );
+
+    return { hours, minutes };
+  };
+
   const formatExactTime = (timestamp) => {
     if (!timestamp) return null;
 
@@ -96,6 +123,7 @@ export default function HomeScreen() {
 
     {BODY_REGIONS.map((region) => {
       const lastTimestamp = getLastInjectionForRegion(region);
+      const timeUntilSafe = getTimeUntilSafe(lastTimestamp);
       return (
         <View
           key={region}
@@ -108,6 +136,15 @@ export default function HomeScreen() {
           <Text style={styles.timeText}>
             Last injected: {getTimeSince(lastTimestamp)}
           </Text>
+          {timeUntilSafe ? (
+            <Text style={styles.warningText}>
+              Safe again in: {timeUntilSafe.hours}h {timeUntilSafe.minutes}m
+            </Text>
+          ) : (
+            <Text style={styles.safeText}>
+              Ready to use
+            </Text>
+          )}
           {lastTimestamp && (
             <Text style={styles.exactTimeText}>
               {formatExactTime(lastTimestamp)}
@@ -175,5 +212,15 @@ const styles = StyleSheet.create({
   injectButtonText: {
     color: 'white',
     fontWeight: '600',
+  },
+  warningText: {
+    color: '#d97706',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  safeText: {
+    color: '#15803d',
+    fontSize: 13,
+    marginTop: 4,
   },
 });
