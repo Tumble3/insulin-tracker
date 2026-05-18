@@ -22,9 +22,37 @@ export default function HistoryScreen() {
     );
   };
 
-  const sorted = [...injections].sort(
-    (a, b) => b.timestamp - a.timestamp
-  );
+  const getDayLabel = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date();
+
+    yesterday.setDate(today.getDate() - 1);
+
+    const isSameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+
+    if (isSameDay(date, today)) return 'Today';
+    if (isSameDay(date, yesterday)) return 'Yesterday';
+
+    return date.toLocaleDateString();
+  };
+
+  const grouped = injections
+    .slice()
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .reduce((acc, item) => {
+      const label = getDayLabel(item.timestamp);
+
+      if (!acc[label]) {
+        acc[label] = [];
+      }
+
+      acc[label].push(item);
+      return acc;
+    }, {} as Record<string, typeof injections>);
   
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -50,6 +78,16 @@ export default function HistoryScreen() {
         )[0][0]
       : '—';
 
+  const sections = Object.entries(grouped).flatMap(
+    ([label, items]) => [
+      { type: 'header', label },
+      ...items.map((item) => ({
+        ...item,
+        type: 'item',
+      })),
+    ]
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.statsContainer}>
@@ -68,20 +106,37 @@ export default function HistoryScreen() {
         </Text>
       </View>
       <FlatList
-        data={sorted}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.region}>{item.region}</Text>
-            <Text style={styles.time}>{formatTime(item.timestamp)}</Text>
-            <Pressable
-              style={styles.deleteButton}
-              onPress={() => confirmDelete(item.id)}
-            >
-              <Text style={styles.deleteText}>Delete</Text>
-            </Pressable>
-          </View>
-        )}
+        data={sections}
+        keyExtractor={(item, index) => {
+          if (item.type === 'header') {
+            return `header-${item.label}-${index}`;
+          }
+          return item.id;
+        }}
+        renderItem={({ item }) => {
+          if (item.type === 'header') {
+            return (
+              <Text style={styles.header}>
+                {item.label}
+              </Text>
+            );
+          }
+          return (
+            <View style={styles.item}>
+              <Text style={styles.region}>{item.region}</Text>
+              <Text style={styles.time}>
+                {formatTime(item.timestamp)}
+              </Text>
+
+              <Pressable
+                style={styles.deleteButton}
+                onPress={() => confirmDelete(item.id)}
+              >
+                <Text style={styles.deleteText}>Delete</Text>
+              </Pressable>
+            </View>
+          );
+        }}
         ListEmptyComponent={
           <Text style={styles.empty}>No injections recorded yet.</Text>
         }
@@ -137,5 +192,11 @@ const styles = StyleSheet.create({
   statItem: {
     fontSize: 14,
     marginBottom: 4,
+  },
+  header: {
+  fontSize: 16,
+  fontWeight: '700',
+  marginTop: 16,
+  marginBottom: 6,
   },
 });
