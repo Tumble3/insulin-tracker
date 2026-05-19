@@ -118,8 +118,14 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={{ backgroundColor: '#f2f4f8' }}
+      contentContainerStyle={styles.container}
+    >
       <Text style={styles.title}>Insulin Injection Tracker</Text>
+      <Text style={styles.hint}>
+        Tap a region after an injection to keep track of rotation.
+      </Text>
 
     {BODY_REGIONS.map((region) => {
       const lastTimestamp = getLastInjectionForRegion(region);
@@ -167,7 +173,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    //flex: 1,
     padding: 16,
     paddingTop: 40,
     backgroundColor: '#f2f4f8',
@@ -222,5 +228,10 @@ const styles = StyleSheet.create({
     color: '#15803d',
     fontSize: 13,
     marginTop: 4,
+  },
+  hint: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 12,
   },
 });
