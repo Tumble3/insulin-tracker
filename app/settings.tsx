@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 
 
 
@@ -40,47 +40,52 @@ export default function SettingsScreen() {
   }, [recoveryHours]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>
-        Recovery window (hours)
-      </Text>
-
-      <TextInput
-        style={[styles.input,
-          error && styles.inputError
-        ]}
-        keyboardType="numeric"
-        value={recoveryHours}
-        onChangeText={(text) => {
-          const cleaned = text.replace(/[^0-9]/g, '');
-
-          setRecoveryHours(cleaned);
-
-          const value = Number(cleaned);
-
-          if (!cleaned) {
-            setError('Please enter a number');
-          } else if (value < 1 || value > 168) {
-            setError('Value must be between 1 and 168');
-          } else {
-            setError('');
-          }
-        }}
-      />
-
-      {error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : (
-        <Text style={styles.helper}>
-          Enter a value between 1 and 168 hours
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <Text style={styles.label}>
+          Recovery window (hours)
         </Text>
-      )}
 
-      <Text style={styles.helper}>
-        Regions used within this time will be highlighted.
-      </Text>
+        <TextInput
+          style={[styles.input,
+            error && styles.inputError
+          ]}
+          keyboardType="numeric"
+          returnKeyType='done'
+          onSubmitEditing={Keyboard.dismiss}
+          value={recoveryHours}
+          onChangeText={(text) => {
+            const cleaned = text.replace(/[^0-9]/g, '');
 
-    </View>
+            setRecoveryHours(cleaned);
+
+            const value = Number(cleaned);
+
+            if (!cleaned) {
+              setError('Please enter a number');
+            } else if (value < 1 || value > 168) {
+              setError('Value must be between 1 and 168');
+            } else {
+              setError('');
+            }
+          }}
+        />
+
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : (
+          <Text style={styles.helper}>
+            Enter a value between 1 and 168 hours
+          </Text>
+        )}
+
+        <Text style={styles.helper}>
+          Regions used within this time will be highlighted.
+        </Text>
+
+      </View>      
+    </TouchableWithoutFeedback>
+
   );
 }
 
