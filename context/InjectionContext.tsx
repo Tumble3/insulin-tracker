@@ -30,11 +30,12 @@ export const InjectionProvider = ({ children }) => {
     saveInjections();
     }, [injections]);
 
-  const addInjection = (region) => {
+  const addInjection = (region, note="") => {
     const newEntry = {
       id: Date.now().toString(),
       region,
       timestamp: Date.now(),
+      note,          // free text
     };
 
     setInjections((prev) => [newEntry, ...prev]);

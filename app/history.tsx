@@ -121,6 +121,11 @@ export default function HistoryScreen() {
               </Text>
             );
           }
+          {item.note ? (
+            <Text style={styles.note}>
+              {item.note}
+            </Text>
+          ) : null}
           return (
             <View style={styles.item}>
               <Text style={styles.region}>{item.region}</Text>
@@ -198,5 +203,10 @@ const styles = StyleSheet.create({
   fontWeight: '700',
   marginTop: 16,
   marginBottom: 6,
+  },
+  note: {
+    marginTop: 4,
+    fontStyle: 'italic',
+    color: '#555',
   },
 });

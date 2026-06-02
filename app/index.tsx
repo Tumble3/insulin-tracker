@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { InjectionContext } from '../context/InjectionContext';
 
 
@@ -16,6 +16,9 @@ const BODY_REGIONS = [
 export default function HomeScreen() {
   const { injections, addInjection, loading } = useContext(InjectionContext);
   const [recoveryHours, setRecoveryHours] = useState(24);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [note, setNote] = useState('');
 
   const isRecentlyUsed = (timestamp) => {
     if (!timestamp) return false;
@@ -27,17 +30,8 @@ export default function HomeScreen() {
   };
   
   const confirmInjection = (region) => {
-    Alert.alert(
-      'Confirm Injection',
-      `Log injection in ${region}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => addInjection(region),
-        },
-      ]
-    );
+    setSelectedRegion(region);
+    setModalVisible(true);
   };
 
   const getLastInjectionForRegion = (region) => {
@@ -118,6 +112,7 @@ export default function HomeScreen() {
   };
 
   return (
+    <>
     <ScrollView
       style={{ backgroundColor: '#f2f4f8' }}
       contentContainerStyle={styles.container}
@@ -168,6 +163,36 @@ export default function HomeScreen() {
       );
     })}
     </ScrollView>
+    <Modal visible={modalVisible} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text>Add note (optional)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. 8 units, after lunch"
+                value={note}
+                onChangeText={setNote}
+              />
+              <Button
+                title="Save"
+                onPress={() => {
+                  addInjection(selectedRegion, note);
+                  setNote('');
+                  setModalVisible(false);
+                }}
+              />
+              <Button
+                title="Skip"
+                onPress={() => {
+                  addInjection(selectedRegion, '');
+                  setNote('');
+                  setModalVisible(false);
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
+    </>
   );
 }
 
