@@ -121,13 +121,13 @@ export default function HistoryScreen() {
               </Text>
             );
           }
-          {item.note ? (
-            <Text style={styles.note}>
-              {item.note}
-            </Text>
-          ) : null}
           return (
             <View style={styles.item}>
+              {item.note ? (
+                <Text style={styles.note}>
+                  {item.note}
+                </Text>
+              ) : null}
               <Text style={styles.region}>{item.region}</Text>
               <Text style={styles.time}>
                 {formatTime(item.timestamp)}

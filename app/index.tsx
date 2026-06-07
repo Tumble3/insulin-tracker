@@ -259,4 +259,16 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 12,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+  },
 });
