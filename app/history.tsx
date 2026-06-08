@@ -56,7 +56,12 @@ export default function HistoryScreen() {
   
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleString();
+
+    const weekday = date.toLocaleDateString(undefined, {
+      weekday: 'long',
+    });
+
+    return `${weekday}, ${date.toLocaleString()}`;
   };
 
   const totalInjections = injections.length;
