@@ -1,11 +1,15 @@
-import { useContext } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { Alert, Button, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { InjectionContext } from '../context/InjectionContext';
 
 
 export default function HistoryScreen() {
   //const [history, setHistory] = useState([]);
-  const { injections, deleteInjection } = useContext(InjectionContext);
+  const { injections, deleteInjection, editInjection } = useContext(InjectionContext);
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [editedNote, setEditedNote] = useState('');
 
   const confirmDelete = (id) => {
     Alert.alert(
@@ -93,6 +97,12 @@ export default function HistoryScreen() {
     ]
   );
 
+  const openEditModal = (item) => {
+  setEditingItem(item);
+  setEditedNote(item.note || '');
+  setEditModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.statsContainer}>
@@ -144,6 +154,47 @@ export default function HistoryScreen() {
               >
                 <Text style={styles.deleteText}>Delete</Text>
               </Pressable>
+
+              <Pressable
+                style={styles.editButton}
+                onPress={() => openEditModal(item)}
+              >
+                <Text style={styles.editText}>Edit</Text>
+              </Pressable>
+              <Modal
+                visible={editModalVisible}
+                transparent
+                animationType="slide"
+              >
+                <View style={styles.modalContainer}>
+                  <View style={styles.modalContent}>
+                    <Text>Edit Note</Text>
+
+                    <TextInput
+                      style={styles.input}
+                      value={editedNote}
+                      onChangeText={setEditedNote}
+                    />
+
+                    <Button
+                      title="Save"
+                      onPress={() => {
+                        editInjection(
+                          editingItem.id,
+                          editedNote
+                        );
+
+                        setEditModalVisible(false);
+                      }}
+                    />
+
+                    <Button
+                      title="Cancel"
+                      onPress={() => setEditModalVisible(false)}
+                    />
+                  </View>
+                </View>
+              </Modal>
             </View>
           );
         }}
@@ -178,11 +229,11 @@ const styles = StyleSheet.create({
     color: '#777',
   },
   deleteButton: {
-  marginTop: 8,
-  paddingVertical: 6,
-  borderRadius: 6,
-  alignItems: 'center',
-  backgroundColor: '#ffecec',
+    marginTop: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignItems: 'center',
+    backgroundColor: '#ffecec',
   },
   deleteText: {
     color: '#d11a2a',
@@ -213,5 +264,42 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontStyle: 'italic',
     color: '#555',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 12,
+    backgroundColor: 'white',
+  },
+  editButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#4a90e2',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  editText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
   },
 });

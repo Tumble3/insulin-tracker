@@ -47,12 +47,23 @@ export const InjectionProvider = ({ children }) => {
     );
   };
 
+  const editInjection = (id, updatedNote) => {
+    setInjections((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, note: updatedNote }
+          : item
+      )
+    );
+  };  
+
   return (
     <InjectionContext.Provider
       value={{
         injections,
         addInjection,
         deleteInjection,
+        editInjection,
         loading,
       }}
     >
