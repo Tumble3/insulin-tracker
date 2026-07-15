@@ -1,8 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { useContext, useEffect, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Keyboard, Pressable, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import { InjectionContext } from '../context/InjectionContext';
 
 
@@ -10,7 +11,11 @@ import { InjectionContext } from '../context/InjectionContext';
 export default function SettingsScreen() {
   const [recoveryHours, setRecoveryHours] = useState('24');
   const [error, setError] = useState('');
-  const { injections } = useContext(InjectionContext);
+  const {
+    injections,
+    replaceInjections,
+    clearHistory,
+  } = useContext(InjectionContext);
 
 
   useEffect(() => {
@@ -59,6 +64,81 @@ export default function SettingsScreen() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const importHistory = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+      });
+
+      if (result.canceled) return;
+
+      const uri = result.assets[0].uri;
+      const contents = await FileSystem.readAsStringAsync(uri); 
+
+      const parsed = JSON.parse(contents);
+
+      if (!Array.isArray(parsed)) {
+        Alert.alert(
+          'Import failed',
+          'The selected file is not a valid history export.'
+        );
+        return;
+      }
+
+      const valid = parsed.every((item) =>
+        typeof item.id === 'string' &&
+        typeof item.region === 'string' &&
+        typeof item.timestamp === 'number'
+      );
+
+      if (!valid) {
+        Alert.alert(
+          'Import failed',
+          'The file format is invalid.'
+        );
+        return;
+      }
+
+      Alert.alert(
+        'Import History',
+        `Import ${parsed.length} injections?\n\nThis will replace your current history.`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Import',
+            onPress: () => replaceInjections(parsed),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Import failed',
+        'Could not read the selected file.'
+      );
+    }
+  };
+
+  const confirmClearHistory = () => {
+    Alert.alert(
+      'Clear History',
+      'This will permanently delete all injection history.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: clearHistory,
+        },
+      ]
+    );
   };
 
   return (
@@ -113,6 +193,24 @@ export default function SettingsScreen() {
         </Text>
       </Pressable>  
 
+      <Pressable
+        style={styles.exportButton}
+        onPress={importHistory}
+      >
+        <Text style={styles.exportText}>
+          Import History
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.clearButton}
+        onPress={confirmClearHistory}
+      >
+        <Text style={styles.clearText}>
+          Clear History
+        </Text>
+      </Pressable>
+
       </View>    
     </TouchableWithoutFeedback>
   );
@@ -153,6 +251,28 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   exportText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  clearButton: {
+    marginTop: 12,
+    backgroundColor: '#d9534f',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  clearText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  importButton: {
+    backgroundColor: '#4a90e2',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  importText: {
     color: 'white',
     textAlign: 'center',
     fontWeight: '600',

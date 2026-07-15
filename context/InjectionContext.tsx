@@ -57,13 +57,22 @@ export const InjectionProvider = ({ children }) => {
     );
   };  
 
+  const replaceInjections = (newHistory) => {
+    setInjections(newHistory);
+  };
+
+  const clearHistory = () => {
+    setInjections([]);
+  };
+
   return (
     <InjectionContext.Provider
       value={{
         injections,
         addInjection,
         deleteInjection,
-        editInjection,
+        replaceInjections,
+        clearHistory,
         loading,
       }}
     >
