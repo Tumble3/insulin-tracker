@@ -147,20 +147,21 @@ export default function HistoryScreen() {
               <Text style={styles.time}>
                 {formatTime(item.timestamp)}
               </Text>
+              <View style={styles.buttonRow}>
+                <Pressable
+                  style={styles.editButton}
+                  onPress={() => openEditModal(item)}
+                >
+                  <Text style={styles.editText}>Edit</Text>
+                </Pressable>
 
-              <Pressable
-                style={styles.deleteButton}
-                onPress={() => confirmDelete(item.id)}
-              >
-                <Text style={styles.deleteText}>Delete</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.editButton}
-                onPress={() => openEditModal(item)}
-              >
-                <Text style={styles.editText}>Edit</Text>
-              </Pressable>
+                <Pressable
+                  style={styles.deleteButton}
+                  onPress={() => confirmDelete(item.id)}
+                >
+                  <Text style={styles.deleteText}>Delete</Text>
+                </Pressable>
+              </View>
               <Modal
                 visible={editModalVisible}
                 transparent

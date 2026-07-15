@@ -1,12 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
-import { Keyboard, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
+import { useContext, useEffect, useState } from 'react';
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { InjectionContext } from '../context/InjectionContext';
 
 
 
 export default function SettingsScreen() {
   const [recoveryHours, setRecoveryHours] = useState('24');
   const [error, setError] = useState('');
+  const { injections } = useContext(InjectionContext);
+
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -38,6 +43,23 @@ export default function SettingsScreen() {
 
     saveSettings();
   }, [recoveryHours]);
+
+  const exportHistory = async () => {
+    try {
+      const fileUri =
+        FileSystem.documentDirectory +
+        'injection-history.json';
+
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        JSON.stringify(injections, null, 2)
+      );
+
+      await Sharing.shareAsync(fileUri);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -82,10 +104,17 @@ export default function SettingsScreen() {
         <Text style={styles.helper}>
           Regions used within this time will be highlighted.
         </Text>
+        <Pressable
+          style={styles.exportButton}
+          onPress={exportHistory}
+        >
+          <Text style={styles.exportText}>
+            Export History
+        </Text>
+      </Pressable>  
 
-      </View>      
+      </View>    
     </TouchableWithoutFeedback>
-
   );
 }
 
@@ -116,5 +145,16 @@ const styles = StyleSheet.create({
     color: '#d11a2a',
     fontSize: 12,
     marginTop: 4,
+  },
+  exportButton: {
+    backgroundColor: '#4a90e2',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  exportText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: '600',
   },
 });
